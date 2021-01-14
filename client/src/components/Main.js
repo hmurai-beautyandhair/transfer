@@ -14,7 +14,6 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import NativeSelect from '@material-ui/core/NativeSelect';
 import TextField from '@material-ui/core/TextField';
-import Autocomplete from '@material-ui/lab/Autocomplete';
 import Icon from '@material-ui/core/Icon';
 import Fade from '@material-ui/core/Fade';
 import Alert from '@material-ui/lab/Alert';
@@ -25,10 +24,7 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
-import Slider from '@material-ui/core/Slider';
-import Input from '@material-ui/core/Input';
-import VolumeUp from '@material-ui/icons/VolumeUp';
+import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete';
 
 import actions from "../services/service";
 
@@ -116,7 +112,9 @@ export default function  Main() {
         from: '',
         to: '',
       });
-    
+      const filterOptions = createFilterOptions({
+        limit: 10
+      });
       const handleChange = (event) => {
         const name = event.target.name;
         setState({
@@ -126,6 +124,7 @@ export default function  Main() {
       };
 
       const handleChange2 = (id, e) => {
+        e.persist();
           let arr3 = [...items];
           let index = 0;
         let found = arr3?.filter(y => y.product == id)[0]
@@ -135,12 +134,25 @@ export default function  Main() {
     
         console.log(index)
         // console.log("found", found)
-        found.quantity = e.target.value;
+        let maxim = 10
+       
+        
+        if(e.target.value > maxim){
+            found.quantity = maxim
+        }
+        else if(e.target.value === ''){
+            found.quantity = Number(0)
+        }
+        else{
+            found.quantity = e.target.value;
+        }
         console.log('Found', found)
  arr3.splice(index, 1, found)
 
 console.log("Arr3", arr3)
-setItems(arr3)
+setTimeout( () => {setItems(arr3)}
+  , 4000);
+
         console.log(e.target.value)
 
       };
@@ -167,27 +179,27 @@ setItems(arr3)
 
       const Rows = ()=>{
       
-            return items.map((x) => (
-                <TableRow key={x.product}>
-                  <TableCell align="center" component="th" scope="row">
+            return items.map((x, i) => (
+                <TableRow key={x}>
+                  <TableCell  align="center" component="th" scope="row">
                     {x.product}
                   </TableCell>
-                  <TableCell align="center">
+                  <TableCell   style={{ margin: 4, fontWeight: 600, fontSize: '1.4em' }} align="center">
                       
                       
                       {console.log(typeof x.quantity)}
                      
                       <TextField
-         id="filled-size-small"
+         id="standard-full-width"
+         margin="normal"
           label="quantity"
-          type="number"
+        //   type="number"
           align="center"
-          width={10}
+          style={{ margin: 4, fontWeight: 600, fontSize: '1.4em' }}
           onChange={(e)=>handleChange2(x.product, e)}
           defaultValue={x.quantity}
-          InputLabelProps={{
-            shrink: true,
-          }}
+        
+         
         />
     
                       </TableCell>
@@ -205,7 +217,7 @@ setItems(arr3)
 
       const handleSubmit =(e) =>{
         e.preventDefault();
-          if(!(state.from) || !(state.to) || (value.length <= 0)){
+          if(!(state.from) || !(state.to) || (items.length <= 0)){
             setError(true);
 
             setTimeout(() => {
@@ -219,7 +231,7 @@ setItems(arr3)
       let transfer = {
        from: state.from,
        to: state.to,
-       products: value
+       products: items
       }
       console.log('This Transfer', transfer)
       setState({
@@ -227,6 +239,7 @@ setItems(arr3)
         to: ''
       })
       setValue([]) 
+      setItems([]) 
       setFlash(true);
 
       setTimeout(() => {
@@ -303,6 +316,7 @@ const flatProps = {
        {...flatProps}
         value={value}
         onChange={(event, newValue) => {
+            console.log('Event', event.target.value)
             let arr = [...items]
             if(newValue) {
             if(arr.filter(e => e.product === newValue).length <= 0) arr.push({product: newValue, quantity: 0})
@@ -312,6 +326,7 @@ const flatProps = {
           setItems(arr)
         }}
         renderInput={(params) => <TextField {...params} label="Search for product"  />}
+        filterOptions={filterOptions}
       />
 <Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>
           <Alert  severity="success">Transfer successfully completed!</Alert>
@@ -320,13 +335,14 @@ const flatProps = {
           <Alert  severity="error">Please fill in all required fields!</Alert>
         </Fade>
               </Typography>
-              <Typography  color="inherit" variant="subtitle1" component="div">
+              <Typography    style={{color: 'rgb(0 0 0 / 67%)'}} variant="h5" component="h5">
         Selected Products
         </Typography>
               <TableContainer component={Paper}>
       <Table  size="small" aria-label="a dense table">
         <TableHead>
           <TableRow>
+            <TableCell align="center"></TableCell>
             <TableCell align="center"></TableCell>
             <TableCell align="center"></TableCell>
             <TableCell align="center"></TableCell>
