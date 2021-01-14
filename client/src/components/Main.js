@@ -143,6 +143,22 @@ setItems(arr3)
 
       };
 
+      const deleteItem = (id) => {
+        let arr3 = [...items];
+        let index = 0;
+      let found = arr3?.filter(y => y.product == id)[0]
+      arr3?.filter((y, i) => {
+          if(y.product == id) index = i
+      })
+  
+      console.log(index)
+      console.log('Found', found)
+arr3.splice(index, 1)
+console.log("Arr3", arr3)
+setItems(arr3)
+
+    };
+
      
     
 
@@ -151,18 +167,20 @@ setItems(arr3)
       
             return items.map((x) => (
                 <TableRow key={x.product}>
-                  <TableCell component="th" scope="row">
+                  <TableCell align="center" component="th" scope="row">
                     {x.product}
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell align="center">
                       
                       
                       {console.log(typeof x.quantity)}
                      
                       <TextField
-          id="standard-number"
-          label="Number"
+         id="filled-size-small"
+          label="quantity"
           type="number"
+          align="center"
+          width={10}
           onChange={(e)=>handleChange2(x.product, e)}
           defaultValue={x.quantity}
           InputLabelProps={{
@@ -171,8 +189,11 @@ setItems(arr3)
         />
     
                       </TableCell>
-                
+                      <TableCell align="center" component="th" scope="row">
+                      <Button  variant="outlined" size="small" onClick={()=>deleteItem(x.product)}>Delete</Button>
+                </TableCell>
                 </TableRow>
+                
               ))
     }
     
@@ -281,7 +302,9 @@ const flatProps = {
         value={value}
         onChange={(event, newValue) => {
             let arr = [...items]
+            if(newValue) {
             if(arr.filter(e => e.product === newValue).length <= 0) arr.push({product: newValue, quantity: 0})
+            }
           setValue(newValue);
           console.log('arrrrr', arr)
           setItems(arr)
@@ -299,8 +322,9 @@ const flatProps = {
       <Table  size="small" aria-label="a dense table">
         <TableHead>
           <TableRow>
-            <TableCell>Product</TableCell>
-            <TableCell align="right">Quantity</TableCell>
+            <TableCell align="center"></TableCell>
+            <TableCell align="center"></TableCell>
+            <TableCell align="center"></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -324,3 +348,4 @@ Transfer
       );
 
 }
+
