@@ -25,6 +25,10 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import Grid from '@material-ui/core/Grid';
+import Slider from '@material-ui/core/Slider';
+import Input from '@material-ui/core/Input';
+import VolumeUp from '@material-ui/icons/VolumeUp';
 
 import actions from "../services/service";
 
@@ -80,11 +84,12 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     zIndex: '1500',
   },
+  input: {
+    width: 42,
+  }
 }));
 
-function createData(name, quantity) {
-    return { name, quantity };
-  }
+
   
 
 
@@ -118,17 +123,63 @@ export default function  Main() {
         });
       };
 
-      const rows6 = [
-
-        createData('Frozen yoghurt', 159, 6 ),
-        createData('Ice cream sandwich', 237)
-      ]
-      const Rows = ()=>{
-        return items.map(x =>{
-        return <div>{x.product}, {x.quantity}</div>
+      const handleChange2 = (id, e) => {
+          let arr3 = [...items];
+          let index = 0;
+        let found = arr3?.filter(y => y.product == id)[0]
+        arr3?.filter((y, i) => {
+            if(y.product == id) index = i
         })
+    
+        console.log(index)
+        // console.log("found", found)
+        found.quantity = e.target.value;
+        console.log('Found', found)
+ arr3.splice(index, 1, found)
+
+console.log("Arr3", arr3)
+setItems(arr3)
+        console.log(e.target.value)
+
+      };
+
+     
+    
+
+
+      const Rows = ()=>{
+      
+            return items.map((x) => (
+                <TableRow key={x.product}>
+                  <TableCell component="th" scope="row">
+                    {x.product}
+                  </TableCell>
+                  <TableCell align="right">
+                      
+                      
+                      {console.log(typeof x.quantity)}
+                     
+                      <TextField
+          id="standard-number"
+          label="Number"
+          type="number"
+          onChange={(e)=>handleChange2(x.product, e)}
+          defaultValue={x.quantity}
+          InputLabelProps={{
+            shrink: true,
+          }}
+        />
+    
+                      </TableCell>
+                
+                </TableRow>
+              ))
     }
     
+ 
+
+
+
       const handleSubmit =(e) =>{
         e.preventDefault();
           if(!(state.from) || !(state.to) || (value.length <= 0)){
@@ -225,32 +276,15 @@ const flatProps = {
               </Typography>
               <Typography variant="body2"  component="p" className={classes.auto}>
               <Autocomplete
-            multiple
+          
        {...flatProps}
         value={value}
         onChange={(event, newValue) => {
+            let arr = [...items]
+            if(arr.filter(e => e.product === newValue).length <= 0) arr.push({product: newValue, quantity: 0})
           setValue(newValue);
-          let arr = [...items]
-          let arr2  = []
-      
-        console.log('Value', newValue)
-          if(value.length > 0){
-            console.log('here')
-            newValue.forEach(x =>{
-              if(arr.length > 0) {
-          if(arr.filter(e => e.product === x).length <= 0){
-              arr2.push({product: x, quantity: 1})
-          }
-          else{
-            arr2.push(arr.filter(e => e.product === x)[0])
-          }
-          }
-          else{
-            arr2.push({product: x, quantity: 1})
-          }
-          })
-        }
-        setItems(arr2)
+          console.log('arrrrr', arr)
+          setItems(arr)
         }}
         renderInput={(params) => <TextField {...params} label="Search for product"  />}
       />
@@ -261,9 +295,7 @@ const flatProps = {
           <Alert  severity="error">Please fill in all required fields!</Alert>
         </Fade>
               </Typography>
-            </CardContent>
-
-    {/* <TableContainer component={Paper}>
+              <TableContainer component={Paper}>
       <Table  size="small" aria-label="a dense table">
         <TableHead>
           <TableRow>
@@ -272,28 +304,22 @@ const flatProps = {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.name}>
-              <TableCell component="th" scope="row">
-                {row.name}
-              </TableCell>
-              <TableCell align="right">{row.quantity}</TableCell>
-            
-            </TableRow>
-          ))}
+          <Rows/>
         </TableBody>
       </Table>
-    </TableContainer> */}
-    <Rows/>
+    </TableContainer>
+            </CardContent>
+
+    
 
           </CardContent>
           <CardActions className={classes.button}>
           <Button onClick={handleSubmit}  variant="outlined"  endIcon={<Icon>send</Icon>}>
 Transfer
 </Button >
+
+
           </CardActions>
-    
-    {console.log('Items', items)}
         </Card>
       );
 
