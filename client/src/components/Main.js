@@ -97,6 +97,7 @@ const useStyles = makeStyles((theme) => ({
 export default function  Main() {
     const classes = useStyles();
    const [data, setData] = useState([]);
+   const [skus, setSkus] = useState([]);
    const [value, setValue] = useState([]);
    const [items, setItems] = useState([]);
    const [flash, setFlash] = useState(null);
@@ -104,9 +105,10 @@ export default function  Main() {
     useEffect(() => {
         const fetchData = async () => {
           const result = await actions.data();
-          console.log('Warehouses', result.data)
+          const result2 = await actions.products();
+          console.log('Products', result2.data)
           setData(result.data);
-          
+          setSkus(result2.data)
         };
         fetchData();
       }, []);
@@ -241,7 +243,7 @@ const Data = ()=>{
     })
 }
 const flatProps = {
-    options: data.map((option) => option.identifier),
+    options: skus.map((option) => option),
   };
 
     return (
@@ -318,6 +320,9 @@ const flatProps = {
           <Alert  severity="error">Please fill in all required fields!</Alert>
         </Fade>
               </Typography>
+              <Typography  color="inherit" variant="subtitle1" component="div">
+        Selected Products
+        </Typography>
               <TableContainer component={Paper}>
       <Table  size="small" aria-label="a dense table">
         <TableHead>

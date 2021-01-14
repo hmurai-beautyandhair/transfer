@@ -13,6 +13,9 @@ const actions = {
   data: async () => {
     return await service.get("/data");
   },
+  products: async () => {
+    return await service.get("/products");
+  },
 //   addSale: async sale => {
 //     return await service.post("/sale/add", sale);
 //   },

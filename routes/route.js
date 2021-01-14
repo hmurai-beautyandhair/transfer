@@ -18,7 +18,7 @@ router.get("/products", async (req, res) => {
 
     let data = await axios.get('https://scripts.wigs.com/shopify/products/product-data/skus-and-barcodes-wigoutlet.com.json').
   catch(err => err);
-  console.log(data)
+  console.log(data.data)
 res.json(data.data)
 });
 
