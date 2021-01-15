@@ -41,8 +41,11 @@ router.post("/transfer", async (req, res) => {
     axios.post('https://scripts.wigs.com/shiphero/warehouse-transfer/process.php', req.body)
       .then((response) => {
           if(response.data) {
-      console.log('Response', response.data);
-        res.json(response.data)
+     
+
+      console.log('Response',response.data.results);
+      
+        res.json(response.data.results)
           }
           else {
             res.status(409).send('Server error')

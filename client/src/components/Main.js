@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import axios from "axios";
+import React, { useState, useEffect} from "react";
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
-import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -27,6 +25,7 @@ import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete
 import Input from '@material-ui/core/Input';
 import WarningIcon from '@material-ui/icons/Warning';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 
 
@@ -105,6 +104,9 @@ export default function  Main() {
    const [error2, setError] = useState(null);
    const [error3, setError3] = useState(null);
    const [error4, setError4] = useState(null);
+   const [transf, setTransf] = useState(null);
+   
+
     useEffect(() => {
         const fetchData = async () => {
           const result = await actions.data();
@@ -136,7 +138,7 @@ export default function  Main() {
           let arr3 = [...items];
           let index = 0;
         let found = arr3?.filter(y => y.product == id)[0]
-        arr3?.filter((y, i) => {
+        arr3?.forEach((y, i) => {
             if(y.product == id) index = i
         })
     
@@ -196,7 +198,7 @@ setItems(arr3)
       const Rows = ()=>{
       if(items.length > 0) {
             return items.map((x, i) => (
-                <TableRow key={x}>
+                <TableRow key={x.product}>
                   <TableCell  align="center" component="th" scope="row">
                     {x.product}
                   </TableCell>
@@ -244,15 +246,15 @@ setItems(arr3)
     const Returns = ()=>{
         if(returns.length > 0) {
               return returns.map((x, i) => (
-                  <TableRow key={x}>
+                  <TableRow key={i}>
                     <TableCell  align="center" component="th" scope="row">
                       {x.sku}
                     </TableCell>
                     
          
-                      {x.errors ?  <TableCell>
+                      {x.errors ?  <TableCell  align="center" component="th" scope="row">
                         <WarningIcon color="secondary" fontSize="large"/>
-                      </TableCell> :  <TableCell>
+                      </TableCell> :  <TableCell  align="center" component="th" scope="row">
                       <CheckCircleIcon style={{ color: 'rgb(111 220 76)' }}  fontSize="large"/>
                           </TableCell>}
                 
@@ -285,7 +287,7 @@ setItems(arr3)
 
             setTimeout(() => {
               setError3(null);
-            }, 2000);
+            }, 3000);
             return
           }
           let new_products2 = []
@@ -312,11 +314,11 @@ setItems(arr3)
       setItems([]) 
 console.log()
      
-     
+setTransf(true);
       actions.transfer(transfer).then(x =>{
           if(x.data) {
         setFlash(true);
-// setReturns(x.data)
+setReturns(x.data)
 
 
     //   setTimeout(() => {
@@ -368,7 +370,7 @@ const flatProps = {
               <Typography gutterBottom variant="h5" component="h2" className={classes.title}>
                Warehouse Transfer
               </Typography>
-              <Typography variant="body2"  component="p" className={classes.form}>
+              <Typography variant="body2"  component="div" className={classes.form}>
               <FormControl required className={classes.formControl}>
         <InputLabel > From Warehouse</InputLabel>
         <Select
@@ -406,7 +408,13 @@ const flatProps = {
         </Select>
         <FormHelperText>Required</FormHelperText>
       </FormControl>
-              </Typography>
+              </Typography >
+              <Typography variant="body2"  component="h2" align='center'>
+              {(transf && returns <= 0) ?<Fade align='center' in={transf} timeout={{ enter: 300, exit: 1000 }}>
+              <CircularProgress  align='center' style={{ color: 'rgb(96 96 96 / 87%)' }} />
+              
+        </Fade>: ('')}
+        </Typography>
               {flash ? <Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>
           <Alert  severity="success">Transfer successfully completed!</Alert>
         </Fade> : ('')}
@@ -503,27 +511,15 @@ Transfer
         </TableBody>
       </Table>
     </TableContainer>
-  
-    </> : ('')}
-  
-<TableContainer component={Paper}>
-      <Table  size="small" aria-label="a dense table">
-        <TableHead>
-          <TableRow>
-            <StyledTableCell align="center">SKU</StyledTableCell>
-            <StyledTableCell align="center">STATUS</StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          <Returns/>
-        </TableBody>
-      </Table>
-    </TableContainer>
     <Typography  align='center' style={{ marginTop: '2em'}} >
     <Button onClick={refreshPage} size='large' variant="outlined" >
   Do more work
 </Button>
               </Typography>
+  
+    </> : ('')}
+  
+
    
         </Card>
       );
