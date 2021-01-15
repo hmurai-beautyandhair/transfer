@@ -6,11 +6,11 @@ app.enable("trust proxy");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 const path = require("path");
+const basicAuth = require('./middleware/auth'); 
 
 
 
-
-
+app.use(basicAuth); 
 app.use(express.static(path.join(__dirname, "client/build")));
 
 app.use(bodyParser.json());
