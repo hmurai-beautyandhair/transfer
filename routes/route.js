@@ -23,6 +23,37 @@ res.json(data.data)
 });
 
 
+router.get("/max/:str", async (req, res) => {
+
+axios.post('https://scripts.wigs.com/shiphero/shiphero_data/get-stock-quantities.php', {
+    query: req.params.str,
+  })
+  .then((response) => {
+    console.log(response.data);
+    res.json(response.data)
+  }, (error) => {
+    console.log(error);
+  });
+});
+
+router.post("/transfer", async (req, res) => {
+
+    axios.post('https://scripts.wigs.com/shiphero/warehouse-transfer/process.php', req.body)
+      .then((response) => {
+          if(response.data) {
+      console.log('Response', response.data);
+        res.json(response.data)
+          }
+          else {
+            res.status(409).send('Server error')
+            console.log('Error', response)
+          }
+      }, (error) => {
+        console.log('EEEEEEEEEEEEEEEE', error);
+        res.json(error.data)
+      });
+    });
+
 module.exports = router;
 
 

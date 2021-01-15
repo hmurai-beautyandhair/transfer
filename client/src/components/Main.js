@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardActions from '@material-ui/core/CardActions';
@@ -12,7 +12,6 @@ import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import NativeSelect from '@material-ui/core/NativeSelect';
 import TextField from '@material-ui/core/TextField';
 import Icon from '@material-ui/core/Icon';
 import Fade from '@material-ui/core/Fade';
@@ -25,6 +24,11 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete';
+import Input from '@material-ui/core/Input';
+import WarningIcon from '@material-ui/icons/Warning';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+
+
 
 import actions from "../services/service";
 
@@ -96,8 +100,11 @@ export default function  Main() {
    const [skus, setSkus] = useState([]);
    const [value, setValue] = useState([]);
    const [items, setItems] = useState([]);
+   const [returns, setReturns] = useState([]);
    const [flash, setFlash] = useState(null);
    const [error2, setError] = useState(null);
+   const [error3, setError3] = useState(null);
+   const [error4, setError4] = useState(null);
     useEffect(() => {
         const fetchData = async () => {
           const result = await actions.data();
@@ -121,9 +128,10 @@ export default function  Main() {
           ...state,
           [name]: event.target.value,
         });
+        setItems([])
       };
 
-      const handleChange2 = (id, e) => {
+      const handleChange2 = (id, max,  e) => {
         e.persist();
           let arr3 = [...items];
           let index = 0;
@@ -134,11 +142,11 @@ export default function  Main() {
     
         console.log(index)
         // console.log("found", found)
-        let maxim = 10
        
-        
-        if(e.target.value > maxim){
-            found.quantity = maxim
+    if(max){
+        max = Number(max)
+        if(e.target.value > max){
+            found.quantity = max
         }
         else if(e.target.value === ''){
             found.quantity = Number(0)
@@ -151,9 +159,9 @@ export default function  Main() {
 
 console.log("Arr3", arr3)
 setTimeout( () => {setItems(arr3)}
-  , 4000);
-
-        console.log(e.target.value)
+  , 2000);
+    }
+       
 
       };
 
@@ -173,17 +181,30 @@ setItems(arr3)
 
     };
 
-     
+    const StyledTableCell = withStyles((theme) => ({
+        head: {
+          backgroundColor: 'rgb(241 240 240);',
+          color: theme.palette.common.black ,
+        },
+        body: {
+          fontSize: 14,
+        },
+      }))(TableCell);
     
 
 
       const Rows = ()=>{
-      
+      if(items.length > 0) {
             return items.map((x, i) => (
                 <TableRow key={x}>
                   <TableCell  align="center" component="th" scope="row">
                     {x.product}
                   </TableCell>
+                  <TableCell  align="center" component="th" scope="row"><FormControl disabled>
+        <InputLabel htmlFor="component-disabled">Max</InputLabel>
+        <Input id="component-disabled" value={x.max} />
+       
+      </FormControl></TableCell>
                   <TableCell   style={{ margin: 4, fontWeight: 600, fontSize: '1.4em' }} align="center">
                       
                       
@@ -192,26 +213,58 @@ setItems(arr3)
                       <TextField
          id="standard-full-width"
          margin="normal"
-          label="quantity"
+          label="Quantity"
         //   type="number"
           align="center"
           style={{ margin: 4, fontWeight: 600, fontSize: '1.4em' }}
-          onChange={(e)=>handleChange2(x.product, e)}
+          onChange={(e)=>handleChange2(x.product, x.max,  e)}
           defaultValue={x.quantity}
         
          
         />
     
                       </TableCell>
+
+
                       <TableCell align="center" component="th" scope="row">
                       <Button  variant="outlined" size="small" onClick={()=>deleteItem(x.product)}>Delete</Button>
                 </TableCell>
                 </TableRow>
                 
               ))
+            }
+            else{
+                return ''
+            }
     }
-    
+    function refreshPage() {
+        window.location.reload(false);
+      }
  
+    const Returns = ()=>{
+        if(returns.length > 0) {
+              return returns.map((x, i) => (
+                  <TableRow key={x}>
+                    <TableCell  align="center" component="th" scope="row">
+                      {x.sku}
+                    </TableCell>
+                    
+         
+                      {x.errors ?  <TableCell>
+                        <WarningIcon color="secondary" fontSize="large"/>
+                      </TableCell> :  <TableCell>
+                      <CheckCircleIcon style={{ color: 'rgb(111 220 76)' }}  fontSize="large"/>
+                          </TableCell>}
+                
+                  </TableRow>
+                  
+                ))
+              }
+              else{
+                  return ''
+              }
+      }
+  
 
 
 
@@ -222,29 +275,73 @@ setItems(arr3)
 
             setTimeout(() => {
               setError(null);
-            }, 5000);
+            }, 2000);
           
             //   alert('Please, fill in all required fields')
               return 
           }
-       
+          if(items.filter(x => x.quantity == 0).length > 0){
+            setError3(true);
+
+            setTimeout(() => {
+              setError3(null);
+            }, 2000);
+            return
+          }
+          let new_products2 = []
+       let new_products1 = [...items]
+       new_products1.forEach(x =>{
+
+        let sku = x.product.split(',')[0]
+        new_products2.push({sku: sku, quantity: Number(x.quantity)})
+       })
+       console.log('Products', new_products2)
       let transfer = {
-       from: state.from,
-       to: state.to,
-       products: items
+        warehouse_from: state.from,
+        warehouse_to: state.to,
+       products: new_products2
       }
       console.log('This Transfer', transfer)
+      setData([])
       setState({
         from: '',
         to: ''
       })
+
       setValue([]) 
       setItems([]) 
-      setFlash(true);
+console.log()
+     
+     
+      actions.transfer(transfer).then(x =>{
+          if(x.data) {
+        setFlash(true);
+// setReturns(x.data)
 
-      setTimeout(() => {
-        setFlash(null);
-      }, 5000);
+
+    //   setTimeout(() => {
+    //     setFlash(null);
+    //   }, 4000);
+  
+   
+}
+    else{
+        console.log('here')
+            setError4(true);
+
+            setTimeout(() => {
+              setError4(null);
+            }, 5000);
+    }
+     
+    }).catch(err=>{
+        console.log(err)
+        setError4(true);
+            setTimeout(() => {
+              setError4(null);
+            }, 5000);
+    })
+      
       }
 
      
@@ -310,6 +407,13 @@ const flatProps = {
         <FormHelperText>Required</FormHelperText>
       </FormControl>
               </Typography>
+              {flash ? <Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>
+          <Alert  severity="success">Transfer successfully completed!</Alert>
+        </Fade> : ('')}
+        {error4 ?<Fade in={error4} timeout={{ enter: 300, exit: 1000 }}>
+          <Alert  severity="error">Server error occurred. Please, reload the page!</Alert>
+        </Fade>: ('')}
+              {(state.to && state.from) ? <>
               <Typography variant="body2"  component="p" className={classes.auto}>
               <Autocomplete
           
@@ -318,8 +422,24 @@ const flatProps = {
         onChange={(event, newValue) => {
             console.log('Event', event.target.value)
             let arr = [...items]
+
             if(newValue) {
-            if(arr.filter(e => e.product === newValue).length <= 0) arr.push({product: newValue, quantity: 0})
+              
+
+            if(arr.filter(e => e.product === newValue).length <= 0) {
+                let sku = newValue.split(',')[0]
+            if(sku) {
+                    actions.maxValue(sku).then(x =>{
+                        let objs = x.data
+                        let val = []
+                       val = objs.filter(r1 => r1.warehouse_id == state.from)
+                        if(val.length > 0){
+                            console.log('Val', objs)
+                            arr.push({product: newValue, quantity: 0, max: val[0].on_hand})
+                        }
+                    }).catch(err=>err)
+            }
+            }
             }
           setValue(newValue);
           console.log('arrrrr', arr)
@@ -328,14 +448,17 @@ const flatProps = {
         renderInput={(params) => <TextField {...params} label="Search for product"  />}
         filterOptions={filterOptions}
       />
-<Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>
-          <Alert  severity="success">Transfer successfully completed!</Alert>
-        </Fade>
-        <Fade in={error2} timeout={{ enter: 300, exit: 1000 }}>
+  
+
+        {error2 ?<Fade in={error2} timeout={{ enter: 300, exit: 1000 }}>
           <Alert  severity="error">Please fill in all required fields!</Alert>
-        </Fade>
+        </Fade>: ('')}
+        {error3 ?<Fade in={error3} timeout={{ enter: 300, exit: 1000 }}>
+          <Alert  severity="error">One of the products has quantity of zero!</Alert>
+        </Fade>: ('')}
+      
               </Typography>
-              <Typography    style={{color: 'rgb(0 0 0 / 67%)'}} variant="h5" component="h5">
+              <Typography    style={{color: 'rgb(0 0 0 / 67%)', padding: '1.5em 0.5em 0.2em '}} variant="h5" component="h5">
         Selected Products
         </Typography>
               <TableContainer component={Paper}>
@@ -352,19 +475,56 @@ const flatProps = {
           <Rows/>
         </TableBody>
       </Table>
-    </TableContainer>
+    </TableContainer></>
+    : ('')}
             </CardContent>
 
     
 
           </CardContent>
+          {(state.to && state.from) ?
           <CardActions className={classes.button}>
           <Button onClick={handleSubmit}  variant="outlined"  endIcon={<Icon>send</Icon>}>
 Transfer
 </Button >
 
 
-          </CardActions>
+          </CardActions> :('')}
+          {returns.length > 0 ? <> <TableContainer component={Paper}>
+      <Table  size="small" aria-label="a dense table">
+        <TableHead>
+          <TableRow>
+            <StyledTableCell align="center">SKU</StyledTableCell>
+            <StyledTableCell align="center">STATUS</StyledTableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <Returns/>
+        </TableBody>
+      </Table>
+    </TableContainer>
+  
+    </> : ('')}
+  
+<TableContainer component={Paper}>
+      <Table  size="small" aria-label="a dense table">
+        <TableHead>
+          <TableRow>
+            <StyledTableCell align="center">SKU</StyledTableCell>
+            <StyledTableCell align="center">STATUS</StyledTableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <Returns/>
+        </TableBody>
+      </Table>
+    </TableContainer>
+    <Typography  align='center' style={{ marginTop: '2em'}} >
+    <Button onClick={refreshPage} size='large' variant="outlined" >
+  Do more work
+</Button>
+              </Typography>
+   
         </Card>
       );
 

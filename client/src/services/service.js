@@ -16,6 +16,12 @@ const actions = {
   products: async () => {
     return await service.get("/products");
   },
+ maxValue: async str => {
+    return await service.get(`/max/${str}`);
+  },
+  transfer: async(data) =>{
+    return await service.post('/transfer', data)
+  }
 //   addSale: async sale => {
 //     return await service.post("/sale/add", sale);
 //   },
