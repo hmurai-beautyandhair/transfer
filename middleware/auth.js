@@ -3,9 +3,8 @@ const compare = require('tsscmp');
 
 const check = (name, pass) => {   
   let valid = true;   // Simple method to prevent short-circuit and use timing-safe compare   
-  valid = compare(name, 'name') && valid;   
-  valid = compare(pass, 'password') && valid;   
-
+  valid = compare(name, 'b2b') && valid;   
+  valid = compare(pass, 'b2bWeb@911') && valid;   
   return valid; 
 }; 
 
