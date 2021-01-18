@@ -105,6 +105,10 @@ export default function  Main() {
    const [error3, setError3] = useState(null);
    const [error4, setError4] = useState(null);
    const [transf, setTransf] = useState(null);
+   const [zero_q, setZero_q] = useState(null);
+   const [max_q, setMax_q] = useState(null);
+   
+   const [barcode, setBarcode] = useState('');
    
 
     useEffect(() => {
@@ -124,6 +128,140 @@ export default function  Main() {
       const filterOptions = createFilterOptions({
         limit: 10
       });
+
+      const handleChange5 = (event) => {
+         
+      console.log(event.target.value)
+      let newValue = event.target.value
+      let arr = [...items]
+
+      if(newValue) {
+      
+        let r1 = new RegExp(`.+,${newValue},.+`,"g");
+        if(skus.filter(x => x.match(r1)).length > 0){
+          let prod = skus.filter(x => x.match(r1))[0]
+            let sku = (skus.filter(x => x.match(r1))[0]).split(',')[0]
+            console.log('SKU greater 0', sku)
+            if(arr.filter(e => e.product === prod).length <= 0) {
+            if(sku) {
+                
+                    actions.maxValue(sku).then(x =>{
+                        let objs = x.data
+                        let val = []
+                       val = objs.filter(r1 => r1.warehouse_id == state.from)
+                        if(val.length > 0){
+                          
+                            if(skus.filter(x => x.match(r1)).length > 0){
+                                console.log("match")
+                                if(Number(val[0].on_hand) > 0 ) {
+                                arr.push({product: prod, quantity: 1, max: val[0].on_hand})
+                                setItems(arr)
+                                setTimeout( () => {
+                                    if(event.target.value >= 6){
+                                        event.target.value = ''
+                                      }
+                                
+                                }
+                                , 1000);
+                            
+                                return;
+                            }
+                            else{
+                                setZero_q(true);
+
+                                setTimeout(() => {
+                                    setZero_q(null);
+                                }, 2000);
+                                setTimeout( () => {
+                                    if(event.target.value >= 6){
+                                        event.target.value = ''
+                                      }
+                                
+                                }
+                                , 1000);
+                                return
+                            }
+                            }
+                            else{
+                                console.log('No match')
+                            arr.push({product: prod, quantity: 0, max: val[0].on_hand})
+                            setItems(arr)
+                            setBarcode('')
+                            setTimeout( () => {
+                                if(event.target.value >= 6){
+                                    event.target.value = ''
+                                  }
+                            
+                            }
+                            , 1000);
+                                return;
+                            }
+                        }
+                    }).catch(err=>err)
+            }
+            }
+            else{
+                let index = 0;
+               let same_sku = arr.filter((e, i) => {
+                   if( e.product === prod) {
+                       index = i;
+                       return e
+                   }}
+                   )[0] 
+                   if(same_sku.max == same_sku.quantity){
+                    setMax_q(true);
+
+                    setTimeout(() => {
+                        setMax_q(null);
+                    }, 3000);
+                    setBarcode('')
+                    setTimeout( () => {
+                        if(event.target.value >= 6){
+                            event.target.value = ''
+                          }
+                    
+                    }
+                    , 1000);
+                    return
+                   }
+         same_sku.quantity =  Number(same_sku.quantity) + 1
+         arr.splice(index, 1, same_sku)
+         setItems(arr)
+         setBarcode('')
+         setTimeout( () => {
+             if(event.target.value >= 6){
+                 event.target.value = ''
+               }
+         
+         }
+         , 1000);
+            }
+            }
+            // else{
+            //     console.log('WRONG BARCODE')
+                
+            // }
+        
+      
+
+
+        }
+        else{
+            event.target.value =''
+            console.log('No BARCODE')
+            return;
+           
+        }
+
+
+
+
+
+
+      }
+
+
+
       const handleChange = (event) => {
         const name = event.target.name;
         setState({
@@ -372,18 +510,21 @@ const flatProps = {
               </Typography>
               <Typography variant="body2"  component="div" className={classes.form}>
               <FormControl required className={classes.formControl}>
-        <InputLabel > From Warehouse</InputLabel>
+        <InputLabel id="demo-simple-select-label"> From Warehouse</InputLabel>
         <Select
+         labelId="demo-simple-select-label"
+         id="demo-simple-select"
           native
           className={classes.box}
           value={state.from}
+         
           onChange={handleChange}
           name="from"
           inputProps={{
             id: 'age-native-required',
           }}
         >
-          <option aria-label="None" value="" />
+          {/* <option aria-label="None" value="" /> */}
           <Data/>
           
         </Select>
@@ -423,35 +564,66 @@ const flatProps = {
         </Fade>: ('')}
               {(state.to && state.from) ? <>
               <Typography variant="body2"  component="p" className={classes.auto}>
+                
+              <TextField
+         id="standard-full-width"
+         margin="normal"
+          label="Barcode"
+        //   type="number"
+          align="center"
+          style={{ margin: 4, fontWeight: 600, fontSize: '1.4em' }}
+          onChange={(e) =>handleChange5(e)}
+          defaultValue={barcode}
+        //   value={barcode}
+        
+        />
+{max_q ?<Fade in={max_q} timeout={{ enter: 300, exit: 1000 }}>
+          <Alert  severity="error">You have reached maximum inventory allowed for this product!</Alert>
+        </Fade>: ('')}
+        {zero_q ?<Fade in={zero_q} timeout={{ enter: 300, exit: 1000 }}>
+          <Alert  severity="error">This product has quantity of zero!</Alert>
+        </Fade>: ('')}
+
               <Autocomplete
           
        {...flatProps}
         value={value}
         onChange={(event, newValue) => {
-            console.log('Event', event.target.value)
+            console.log('Event', event)
             let arr = [...items]
 
             if(newValue) {
-              
-
+            
             if(arr.filter(e => e.product === newValue).length <= 0) {
                 let sku = newValue.split(',')[0]
+             
             if(sku) {
+                let r1 = new RegExp(`.+,${newValue},.+`,"g");
                     actions.maxValue(sku).then(x =>{
                         let objs = x.data
                         let val = []
                        val = objs.filter(r1 => r1.warehouse_id == state.from)
                         if(val.length > 0){
-                            console.log('Val', objs)
+                          
+                            if(skus.filter(x => x.match(r1)).length > 0){
+                                console.log("match")
+                                arr.push({product: newValue, quantity: 0, max: val[0].on_hand})
+                                setItems(arr)
+                                return;
+                            }
+                            else{
                             arr.push({product: newValue, quantity: 0, max: val[0].on_hand})
+                            setItems(arr)
+                                return;
+                            }
                         }
                     }).catch(err=>err)
             }
             }
             }
-          setValue(newValue);
-          console.log('arrrrr', arr)
-          setItems(arr)
+        //   setValue(newValue);
+        //   console.log('arrrrr', arr)
+        //   setItems(arr)
         }}
         renderInput={(params) => <TextField {...params} label="Search for product"  />}
         filterOptions={filterOptions}
@@ -461,9 +633,13 @@ const flatProps = {
         {error2 ?<Fade in={error2} timeout={{ enter: 300, exit: 1000 }}>
           <Alert  severity="error">Please fill in all required fields!</Alert>
         </Fade>: ('')}
+    
         {error3 ?<Fade in={error3} timeout={{ enter: 300, exit: 1000 }}>
           <Alert  severity="error">One of the products has quantity of zero!</Alert>
         </Fade>: ('')}
+        
+
+      
       
               </Typography>
               <Typography    style={{color: 'rgb(0 0 0 / 67%)', padding: '1.5em 0.5em 0.2em '}} variant="h5" component="h5">

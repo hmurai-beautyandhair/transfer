@@ -10,7 +10,7 @@ const basicAuth = require('./middleware/auth');
 
 
 
-app.use(basicAuth); 
+// app.use(basicAuth); 
 app.use(express.static(path.join(__dirname, "client/build")));
 
 app.use(bodyParser.json());
