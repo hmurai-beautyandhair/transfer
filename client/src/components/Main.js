@@ -41,7 +41,6 @@ const useStyles = makeStyles((theme) => ({
   },
   form: {
     display: 'flex',
-
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -49,6 +48,10 @@ const useStyles = makeStyles((theme) => ({
     padding: 'auto',
     margin: 'auto',
     maxWidth: 620,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+
   },
   media: {
     height: 140,
@@ -95,7 +98,66 @@ const useStyles = makeStyles((theme) => ({
 
 export default function  Main() {
     const classes = useStyles();
-   const [data, setData] = useState([]);
+   const [data, setData] = useState([
+    {
+        "id": "V2FyZWhvdXNlOjY4MzUz",
+        "identifier": "Unstyled"
+        },
+    {
+    "id": "V2FyZWhvdXNlOjU4MTgy",
+    "identifier": "Dallas Production"
+    },
+    {
+    "id": "V2FyZWhvdXNlOjU4MTgw",
+    "identifier": "Donations WH"
+    },
+    {
+    "id": "V2FyZWhvdXNlOjU4MTU2",
+    "identifier": "Primary"
+    },
+    {
+    "id": "V2FyZWhvdXNlOjY4MzUy",
+    "identifier": "Return to Vendor"
+    },
+    {
+    "id": "V2FyZWhvdXNlOjU4MTgx",
+    "identifier": "Trash WH"
+    },
+    {
+    "id": "V2FyZWhvdXNlOjYxNDcw",
+    "identifier": "Virtual"
+    }
+    ]);
+   const [data2, setData2] = useState([
+    {
+        "id": "V2FyZWhvdXNlOjU4MTU2",
+        "identifier": "Primary"
+        },
+    {
+    "id": "V2FyZWhvdXNlOjU4MTgy",
+    "identifier": "Dallas Production"
+    },
+    {
+    "id": "V2FyZWhvdXNlOjU4MTgw",
+    "identifier": "Donations WH"
+    },
+    {
+    "id": "V2FyZWhvdXNlOjY4MzUy",
+    "identifier": "Return to Vendor"
+    },
+    {
+    "id": "V2FyZWhvdXNlOjU4MTgx",
+    "identifier": "Trash WH"
+    },
+    {
+    "id": "V2FyZWhvdXNlOjY4MzUz",
+    "identifier": "Unstyled"
+    },
+    {
+    "id": "V2FyZWhvdXNlOjYxNDcw",
+    "identifier": "Virtual"
+    }
+    ]);
    const [skus, setSkus] = useState([]);
    const [value, setValue] = useState([]);
    const [items, setItems] = useState([]);
@@ -107,41 +169,50 @@ export default function  Main() {
    const [transf, setTransf] = useState(null);
    const [zero_q, setZero_q] = useState(null);
    const [max_q, setMax_q] = useState(null);
+   const [wrong, setWrong] = useState(null);
+   const [time, setTime] = useState('')
    
+   const [time_value , setTime_value] = useState('')
    const [barcode, setBarcode] = useState('');
-   
+   const [state, setState] = React.useState({
+    from: "V2FyZWhvdXNlOjY4MzUz",
+    to: "V2FyZWhvdXNlOjU4MTU2",
+  });
 
+
+  
     useEffect(() => {
         const fetchData = async () => {
-          const result = await actions.data();
           const result2 = await actions.products();
-          console.log('Products', result2.data)
-          setData(result.data);
           setSkus(result2.data)
         };
+        // const interval = setInterval(() => {
+        //     console.log('This will run every second!');
+        //   }, 1000);
+        //   return () => clearInterval(interval);
         fetchData();
       }, []);
-    const [state, setState] = React.useState({
-        from: '',
-        to: '',
-      });
+  
       const filterOptions = createFilterOptions({
         limit: 10
       });
 
       const handleChange5 = (event) => {
          
-      console.log(event.target.value)
+console.log(time)
+
+
       let newValue = event.target.value
+
       let arr = [...items]
 
-      if(newValue) {
-      
+      if(newValue && newValue.length >= 6) {
+   
         let r1 = new RegExp(`.+,${newValue},.+`,"g");
         if(skus.filter(x => x.match(r1)).length > 0){
           let prod = skus.filter(x => x.match(r1))[0]
             let sku = (skus.filter(x => x.match(r1))[0]).split(',')[0]
-            console.log('SKU greater 0', sku)
+
             if(arr.filter(e => e.product === prod).length <= 0) {
             if(sku) {
                 
@@ -152,9 +223,9 @@ export default function  Main() {
                         if(val.length > 0){
                           
                             if(skus.filter(x => x.match(r1)).length > 0){
-                                console.log("match")
+                
                                 if(Number(val[0].on_hand) > 0 ) {
-                                arr.push({product: prod, quantity: 1, max: val[0].on_hand})
+                                arr.unshift({product: prod, quantity: 1, max: val[0].on_hand})
                                 setItems(arr)
                                 setTimeout( () => {
                                     if(event.target.value >= 6){
@@ -183,8 +254,8 @@ export default function  Main() {
                             }
                             }
                             else{
-                                console.log('No match')
-                            arr.push({product: prod, quantity: 0, max: val[0].on_hand})
+          
+                            arr.unshift({product: prod, quantity: 0, max: val[0].on_hand})
                             setItems(arr)
                             setBarcode('')
                             setTimeout( () => {
@@ -218,6 +289,7 @@ export default function  Main() {
                     setTimeout( () => {
                         if(event.target.value >= 6){
                             event.target.value = ''
+                            setTime(0)
                           }
                     
                     }
@@ -225,7 +297,8 @@ export default function  Main() {
                     return
                    }
          same_sku.quantity =  Number(same_sku.quantity) + 1
-         arr.splice(index, 1, same_sku)
+         arr.splice(index, 1 )
+         arr.unshift(same_sku)
          setItems(arr)
          setBarcode('')
          setTimeout( () => {
@@ -237,26 +310,65 @@ export default function  Main() {
          , 1000);
             }
             }
-            // else{
-            //     console.log('WRONG BARCODE')
+            else {
                 
-            // }
-        
-      
 
 
-        }
-        else{
-            event.target.value =''
-            console.log('No BARCODE')
-            return;
+                // setTimeout(()=>{
+                //    console.log('New', newValue)
+                //    console.log('Old', time)
+                //     if(newValue === time){
+                //                      event.target.value = ''
+                //                                         console.log('WRONG BARCODE')
+                //                                         setWrong(true);
+                //                                         setTime(0)
+                //                                         setTimeout(() => {
+                //                                             setWrong(null);
+                //                                         }, 3000);
+                                                      
+                //     }
+                // }, 10000)
+                
+            }
+    
            
-        }
+            setTime(newValue) 
+    }
+ 
+    else{
+        return;
+    }
 
+// if(newValue.length > 0) {
+//         setTimeout(() => {
+          
+//             if(  new Date() >= time && time !== 0) {
+                           
+                
+                                
+//                                     event.target.value = ''
+//                                     console.log('WRONG BARCODE')
+//                                     setWrong(true);
+//                                     setTime(0)
+//                                     setTimeout(() => {
+//                                         setWrong(null);
+//                                     }, 3000);
+                                  
+                            
+                       
+                  
+                      
+                            
+//                         }
+//                     else{
+//                         console.log('Nothing')
+//                     }
+                  
+            
+//                     }, 10000)
 
-
-
-
+                
+//                 }
 
       }
 
@@ -280,7 +392,7 @@ export default function  Main() {
             if(y.product == id) index = i
         })
     
-        console.log(index)
+
         // console.log("found", found)
        
     if(max){
@@ -294,10 +406,10 @@ export default function  Main() {
         else{
             found.quantity = e.target.value;
         }
-        console.log('Found', found)
+
  arr3.splice(index, 1, found)
 
-console.log("Arr3", arr3)
+
 setTimeout( () => {setItems(arr3)}
   , 2000);
     }
@@ -313,10 +425,9 @@ setTimeout( () => {setItems(arr3)}
           if(y.product == id) index = i
       })
   
-      console.log(index)
-      console.log('Found', found)
+    
 arr3.splice(index, 1)
-console.log("Arr3", arr3)
+
 setItems(arr3)
 
     };
@@ -348,7 +459,7 @@ setItems(arr3)
                   <TableCell   style={{ margin: 4, fontWeight: 600, fontSize: '1.4em' }} align="center">
                       
                       
-                      {console.log(typeof x.quantity)}
+                   
                      
                       <TextField
          id="standard-full-width"
@@ -435,22 +546,21 @@ setItems(arr3)
         let sku = x.product.split(',')[0]
         new_products2.push({sku: sku, quantity: Number(x.quantity)})
        })
-       console.log('Products', new_products2)
+
       let transfer = {
         warehouse_from: state.from,
         warehouse_to: state.to,
        products: new_products2
       }
-      console.log('This Transfer', transfer)
+
       setData([])
-      setState({
-        from: '',
-        to: ''
-      })
+      setData2([])
+     setState({to: '', 
+     from: ''})
 
       setValue([]) 
       setItems([]) 
-console.log()
+
      
 setTransf(true);
       actions.transfer(transfer).then(x =>{
@@ -466,7 +576,7 @@ setReturns(x.data)
 
 }
     else{
-        console.log('here')
+
             setError4(true);
 
             setTimeout(() => {
@@ -475,7 +585,7 @@ setReturns(x.data)
     }
      
     }).catch(err=>{
-        console.log(err)
+
         setError4(true);
             setTimeout(() => {
               setError4(null);
@@ -488,8 +598,19 @@ setReturns(x.data)
 
 
 const Data = ()=>{
+
     return data.map(x =>{
-    return  <option key={x.id} value={x.id}>{x.identifier}</option>
+     
+            return  <option key={x.id} value={x.id}>{x.identifier}</option>
+     
+    })
+}
+const Data2 = ()=>{
+
+    return data2.map(x =>{
+     
+            return  <option key={x.id} value={x.id}>{x.identifier}</option>
+     
     })
 }
 const flatProps = {
@@ -501,7 +622,7 @@ const flatProps = {
           <CardContent>
             <CardMedia
               className={classes.media}
-              image="https://qbtgd46ws2c3m4sms3ttzgel-wpengine.netdna-ssl.com/wp-content/uploads/2019/05/shiphero-full.png"
+              image="https://cdn.shopify.com/s/files/1/1165/9138/articles/WO_1024x1024.jpg?v=1581948359"
               title="Contemplative Reptile"
             />
             <CardContent>
@@ -509,31 +630,33 @@ const flatProps = {
                Warehouse Transfer
               </Typography>
               <Typography variant="body2"  component="div" className={classes.form}>
-              <FormControl required className={classes.formControl}>
-        <InputLabel id="demo-simple-select-label"> From Warehouse</InputLabel>
+              <FormControl   className={classes.formControl}>
+        <InputLabel id="demo-simple-select-label"></InputLabel>
         <Select
          labelId="demo-simple-select-label"
          id="demo-simple-select"
           native
           className={classes.box}
           value={state.from}
-         
           onChange={handleChange}
           name="from"
           inputProps={{
             id: 'age-native-required',
           }}
         >
-          {/* <option aria-label="None" value="" /> */}
+          
           <Data/>
           
+          
         </Select>
-        <FormHelperText>Required</FormHelperText>
+        <FormHelperText>From Warehouse</FormHelperText>
         {/* FROM {state.from} */}
       </FormControl>
-      <FormControl required className={classes.formControl}>
-        <InputLabel > To Warehouse</InputLabel>
+      <FormControl  className={classes.formControl}>
+        <InputLabel id="demo-simple-select-label"> </InputLabel>
         <Select
+        labelId="demo-simple-select-label"
+        id="demo-simple-select"
           native
           className={classes.box}
           value={state.to}
@@ -543,11 +666,11 @@ const flatProps = {
             id: 'age-native-required',
           }}
         >
-          <option aria-label="None" value="" />
-          <Data/>
+         
+          <Data2/>
           
         </Select>
-        <FormHelperText>Required</FormHelperText>
+        <FormHelperText>To Warehouse</FormHelperText>
       </FormControl>
               </Typography >
               <Typography variant="body2"  component="h2" align='center'>
@@ -563,15 +686,15 @@ const flatProps = {
           <Alert  severity="error">Server error occurred. Please, reload the page!</Alert>
         </Fade>: ('')}
               {(state.to && state.from) ? <>
-              <Typography variant="body2"  component="p" className={classes.auto}>
+              <Typography variant="body2"  component="div" className={classes.auto}>
                 
               <TextField
-         id="standard-full-width"
+        //  id="standard-full-width"
          margin="normal"
-          label="Barcode"
+          label="Barcode lookup"
         //   type="number"
           align="center"
-          style={{ margin: 4, fontWeight: 600, fontSize: '1.4em' }}
+          style={{ margin: '0 0 2em',  fontWeight: 600, fontSize: '1.4em' }}
           onChange={(e) =>handleChange5(e)}
           defaultValue={barcode}
         //   value={barcode}
@@ -584,12 +707,15 @@ const flatProps = {
           <Alert  severity="error">This product has quantity of zero!</Alert>
         </Fade>: ('')}
 
+        {wrong ?<Fade in={wrong} timeout={{ enter: 300, exit: 1000 }}>
+          <Alert  severity="error">Barcode is undefined!</Alert>
+        </Fade>: ('')}
               <Autocomplete
           
        {...flatProps}
         value={value}
         onChange={(event, newValue) => {
-            console.log('Event', event)
+
             let arr = [...items]
 
             if(newValue) {
@@ -606,13 +732,13 @@ const flatProps = {
                         if(val.length > 0){
                           
                             if(skus.filter(x => x.match(r1)).length > 0){
-                                console.log("match")
-                                arr.push({product: newValue, quantity: 0, max: val[0].on_hand})
+                   
+                                arr.unshift({product: newValue, quantity: 0, max: val[0].on_hand})
                                 setItems(arr)
                                 return;
                             }
                             else{
-                            arr.push({product: newValue, quantity: 0, max: val[0].on_hand})
+                            arr.unshift({product: newValue, quantity: 0, max: val[0].on_hand})
                             setItems(arr)
                                 return;
                             }
@@ -625,7 +751,7 @@ const flatProps = {
         //   console.log('arrrrr', arr)
         //   setItems(arr)
         }}
-        renderInput={(params) => <TextField {...params} label="Search for product"  />}
+        renderInput={(params) => <TextField {...params} label="Search for product manually"  />}
         filterOptions={filterOptions}
       />
   
@@ -642,6 +768,8 @@ const flatProps = {
       
       
               </Typography>
+              {items.length > 0 ?
+              <>
               <Typography    style={{color: 'rgb(0 0 0 / 67%)', padding: '1.5em 0.5em 0.2em '}} variant="h5" component="h5">
         Selected Products
         </Typography>
@@ -659,7 +787,9 @@ const flatProps = {
           <Rows/>
         </TableBody>
       </Table>
-    </TableContainer></>
+    </TableContainer>
+    </>
+    : ('') }</>
     : ('')}
             </CardContent>
 
@@ -694,7 +824,7 @@ Transfer
               </Typography>
   
     </> : ('')}
-  
+
 
    
         </Card>
