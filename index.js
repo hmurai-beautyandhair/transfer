@@ -28,7 +28,7 @@ app.use(cors());
 const sale = require("./routes/route");
 app.use("/", sale);
 
-
+//
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
