@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect, useRef} from "react";
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
@@ -166,18 +166,21 @@ export default function  Main() {
    const [error2, setError] = useState(null);
    const [error3, setError3] = useState(null);
    const [error4, setError4] = useState(null);
+   const [error6, setError6] = useState(null);
    const [transf, setTransf] = useState(null);
    const [zero_q, setZero_q] = useState(null);
    const [max_q, setMax_q] = useState(null);
    const [wrong, setWrong] = useState(null);
    const [time, setTime] = useState('')
-   
+   const [scaned, setScaned] = useState(0)
    const [time_value , setTime_value] = useState('')
    const [barcode, setBarcode] = useState('');
    const [state, setState] = React.useState({
     from: "V2FyZWhvdXNlOjY4MzUz",
     to: "V2FyZWhvdXNlOjU4MTU2",
   });
+  let countRef = useRef(time);
+  countRef.current = time;
 
 
   
@@ -198,16 +201,24 @@ export default function  Main() {
       });
 
       const handleChange5 = (event) => {
-         
-console.log(time)
+       
+//console.log(time)
+if(skus.length === 0) {
+    setError6(true);
+
+    setTimeout(() => {
+      setError6(null);
+    }, 2000);
+    return;
+}
 
 
       let newValue = event.target.value
 
       let arr = [...items]
-
+//console.log('Value', newValue.length)
       if(newValue && newValue.length >= 6) {
-   
+   let scan = scaned
         let r1 = new RegExp(`.+,${newValue},.+`,"g");
         if(skus.filter(x => x.match(r1)).length > 0){
           let prod = skus.filter(x => x.match(r1))[0]
@@ -226,6 +237,7 @@ console.log(time)
                 
                                 if(Number(val[0].on_hand) > 0 ) {
                                 arr.unshift({product: prod, quantity: 1, max: val[0].on_hand})
+                                setScaned(Number(scan) + 1)
                                 setItems(arr)
                                 setTimeout( () => {
                                     if(event.target.value >= 6){
@@ -256,6 +268,7 @@ console.log(time)
                             else{
           
                             arr.unshift({product: prod, quantity: 0, max: val[0].on_hand})
+                            setScaned(Number(scan) + 1)
                             setItems(arr)
                             setBarcode('')
                             setTimeout( () => {
@@ -299,6 +312,7 @@ console.log(time)
          same_sku.quantity =  Number(same_sku.quantity) + 1
          arr.splice(index, 1 )
          arr.unshift(same_sku)
+         setScaned(Number(scan) + 1)
          setItems(arr)
          setBarcode('')
          setTimeout( () => {
@@ -307,27 +321,29 @@ console.log(time)
                }
          
          }
-         , 1000);
+         , 4000);
             }
             }
             else {
                 
 
 
-                // setTimeout(()=>{
+                setTimeout(()=>{
+
                 //    console.log('New', newValue)
                 //    console.log('Old', time)
-                //     if(newValue === time){
-                //                      event.target.value = ''
-                //                                         console.log('WRONG BARCODE')
-                //                                         setWrong(true);
-                //                                         setTime(0)
-                //                                         setTimeout(() => {
-                //                                             setWrong(null);
-                //                                         }, 3000);
+                 
+                    if(newValue === countRef.current){
+                                     event.target.value = ''
+                                                        console.log('WRONG BARCODE')
+                                                        setWrong(true);
+                                                        setTime(0)
+                                                        setTimeout(() => {
+                                                            setWrong(null);
+                                                        }, 2000);
                                                       
-                //     }
-                // }, 10000)
+                    }
+                }, 5000)
                 
             }
     
@@ -339,36 +355,6 @@ console.log(time)
         return;
     }
 
-// if(newValue.length > 0) {
-//         setTimeout(() => {
-          
-//             if(  new Date() >= time && time !== 0) {
-                           
-                
-                                
-//                                     event.target.value = ''
-//                                     console.log('WRONG BARCODE')
-//                                     setWrong(true);
-//                                     setTime(0)
-//                                     setTimeout(() => {
-//                                         setWrong(null);
-//                                     }, 3000);
-                                  
-                            
-                       
-                  
-                      
-                            
-//                         }
-//                     else{
-//                         console.log('Nothing')
-//                     }
-                  
-            
-//                     }, 10000)
-
-                
-//                 }
 
       }
 
@@ -381,6 +367,7 @@ console.log(time)
           [name]: event.target.value,
         });
         setItems([])
+        setScaned(0)
       };
 
       const handleChange2 = (id, max,  e) => {
@@ -425,9 +412,10 @@ setTimeout( () => {setItems(arr3)}
           if(y.product == id) index = i
       })
   
-    
+    let q = found.quantity
 arr3.splice(index, 1)
-
+let s = scaned;
+setScaned(Number(s) - Number(q))
 setItems(arr3)
 
     };
@@ -706,9 +694,12 @@ const flatProps = {
         {zero_q ?<Fade in={zero_q} timeout={{ enter: 300, exit: 1000 }}>
           <Alert  severity="error">This product has quantity of zero!</Alert>
         </Fade>: ('')}
+        {error6 ?<Fade in={error6} timeout={{ enter: 300, exit: 1000 }}>
+        <Alert  severity="error">Server error occurred. Please, reload the page!</Alert>
+      </Fade>: ('')}
 
         {wrong ?<Fade in={wrong} timeout={{ enter: 300, exit: 1000 }}>
-          <Alert  severity="error">Barcode is undefined!</Alert>
+          <Alert  severity="error">Undefined Barcode!</Alert>
         </Fade>: ('')}
               <Autocomplete
           
@@ -770,9 +761,10 @@ const flatProps = {
               </Typography>
               {items.length > 0 ?
               <>
-              <Typography    style={{color: 'rgb(0 0 0 / 67%)', padding: '1.5em 0.5em 0.2em '}} variant="h5" component="h5">
-        Selected Products
+                <Typography    style={{color: 'rgb(0 0 0 / 67%)', padding: '1.5em 0.5em 0.2em '}} variant="h5" component="h5">
+        Selected Products, total scaned: {scaned}
         </Typography>
+        
               <TableContainer component={Paper}>
       <Table  size="small" aria-label="a dense table">
         <TableHead>
@@ -806,7 +798,7 @@ Transfer
           </CardActions> :('')}
           {returns.length > 0 ? <> <TableContainer component={Paper}>
       <Table  size="small" aria-label="a dense table">
-        <TableHead>
+        <TableHead >
           <TableRow>
             <StyledTableCell align="center">SKU</StyledTableCell>
             <StyledTableCell align="center">STATUS</StyledTableCell>
@@ -825,8 +817,6 @@ Transfer
   
     </> : ('')}
 
-
-   
         </Card>
       );
 
