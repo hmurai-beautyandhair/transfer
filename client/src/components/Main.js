@@ -26,6 +26,7 @@ import Input from '@material-ui/core/Input';
 import WarningIcon from '@material-ui/icons/Warning';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Grid from '@material-ui/core/Grid';
 
 
 
@@ -69,15 +70,25 @@ const useStyles = makeStyles((theme) => ({
   },
   title:{
       textAlign: 'center',
-     paddingBottom: '0.3em',
-      fontSize: '2.5em',
+    marginBottom: '1em',
+    paddingTop: '0.5em',
+      fontSize: '2.3em',
       fontWeight: '700',
-      color: 'rgb(0 0 0 / 67%);'
+      color: 'black'
   },
   button:{
+    color: 'rgb(0 0 0 / 67%)',
     float: 'right',
-    color: 'rgb(0 0 0 / 67%);'
   },
+  button2: {
+float: 'right'
+  },
+  text_send: {
+  fontSize: '2em',
+  fontStyle: 'italic',
+  marginRight: '7em',
+  float: 'left !important',
+      },
   alert: {
     left: '0',
     pointerEvents: 'none',
@@ -608,15 +619,25 @@ const flatProps = {
     return (
         <Card className={classes.root}>
           <CardContent>
-            <CardMedia
+          <Grid container spacing={1}>
+        
+        <Grid item xs={8}>
+        <CardMedia
               className={classes.media}
               image="https://cdn.shopify.com/s/files/1/1165/9138/articles/WO_1024x1024.jpg?v=1581948359"
-              title="Contemplative Reptile"
+           
+
             />
+        </Grid>
+     <Grid item xs={4}>
+        <Typography gutterBottom variant="h5" component="h3" className={classes.title}>
+              Warehouse Transfer
+             </Typography>
+        </Grid>
+        </Grid>
+            
             <CardContent>
-              <Typography gutterBottom variant="h5" component="h2" className={classes.title}>
-               Warehouse Transfer
-              </Typography>
+            
               <Typography variant="body2"  component="div" className={classes.form}>
               <FormControl   className={classes.formControl}>
         <InputLabel id="demo-simple-select-label"></InputLabel>
@@ -762,7 +783,7 @@ const flatProps = {
               {items.length > 0 ?
               <>
                 <Typography    style={{color: 'rgb(0 0 0 / 67%)', padding: '1.5em 0.5em 0.2em '}} variant="h5" component="h5">
-        Selected Products, total scaned: {scaned}
+        Products
         </Typography>
         
               <TableContainer component={Paper}>
@@ -790,7 +811,10 @@ const flatProps = {
           </CardContent>
           {(state.to && state.from) ?
           <CardActions className={classes.button}>
-          <Button onClick={handleSubmit}  variant="outlined"  endIcon={<Icon>send</Icon>}>
+            <Typography className={classes.text_send} component="h3" >
+ {scaned} products to transfer
+             </Typography>
+          <Button className={classes.button2} onClick={handleSubmit}  variant="outlined"  endIcon={<Icon>send</Icon>}>
 Transfer
 </Button >
 
